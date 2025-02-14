@@ -102,6 +102,9 @@ function extractAndReplaceWithFunction(str, parseFunction) {
 
   while ((match = regex.exec(str)) !== null) {
       let content = match[1].trim();
+      if (content.indexOf(';') === -1) {
+        continue;
+      }
       let parsedContent = parseFunction(content);
       result = result.replace(match[0], JSON.stringify(parsedContent));
   }
@@ -109,7 +112,7 @@ function extractAndReplaceWithFunction(str, parseFunction) {
   return result;
 }
 
-function parseMatrixString(str) {
+function parseMatrixString(str) {  
   str = str.trim();
   if (str.startsWith('[') && str.endsWith(']')) {
       str = str.slice(1, -1);
@@ -118,8 +121,11 @@ function parseMatrixString(str) {
   let result = [];
   for (let row of rows) {
       row = row.trim();
+      if (row === '') {
+        continue;
+      }
       let elements = row.split(',');
-      elements = elements.map(el => Number(el.trim()));
+      // elements = elements.map(el => Number(el.trim()));
       result.push(elements);
   }
   return result;
