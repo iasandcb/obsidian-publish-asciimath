@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
   console.log('document was not ready, place code here');
-  // myInitCode();
 });
 
 MathJax = {
@@ -21,53 +20,25 @@ navigation.addEventListener('navigate', () => {
 
 const script = document.createElement('script');
 script.onload = function () {
-// myInitCode();
 translate();
 };
 
 script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js?ts=' + new Date().getTime();
 document.head.appendChild(script);
 
-function myInitCode() {
-Array.prototype.slice.call(document.getElementsByTagName('pre'))
-.forEach(pre => {
-  console.log('pre', pre);
-  const codeEl = pre.children[0];
-  // const innerHTML = pre.innerHTML;
-  if (codeEl.classList.contains('language-am')) {
-    console.log('co', codeEl.innerHTML);
-    const code = codeEl.innerHTML;
-    const codes = code.split('\n').filter(e => e);
-    console.log('codes', codes);
-    const para = codes.reduce((acc, code) => acc + '`' + 
-    extractAndReplaceWithFunction(code, parseMatrixString)
-    + '`' + '<br/>', '');
-    console.log('para', para);
-    pre.outerHTML = '<p style="text-align:center">' + para + '</p>';  
-    }
-});
-}
-
 function translate(refresh = false) {
 let pres =  document.getElementsByTagName('pre');
-// const pres =  document.querySelectorAll('pre');
-console.log('pres', pres);
-console.log('pres', pres.length);
-// console.log('pres2', document.getElementsByTagName('pre'));
 pres =  Array.from(document.getElementsByTagName('pre'));
 
 for (let i = 0; i < pres.length; i++) {
   const pre = pres[i];
-  console.log('pre i', i);
-  console.log('pre', pre);
   if (pre.children[0].classList.contains('language-am')) {
     const para = pre.children[0].innerHTML
     .split('\n')
     .filter(e => e)
     .reduce((acc, code) => acc + '`' + 
-      extractAndReplaceWithFunction(code, parseMatrixString)
+    processCode(code)
       + '`' + '<br/>', '');
-    console.log('para', para);
     pre.outerHTML = '<p style="text-align:center">' + para + '</p>';        
   }
 }
@@ -80,18 +51,38 @@ const SYMBOLS = {
 'dom': '\\text{dom}',
 'cod': '\\text{cod}',
 'rank': '\\text{rank}',
-'ran': '\\text{ran}',
 'span': '\\text{span}',
-'nullity': '\\text{nullity}'
+'nullity': '\\text{nullity}',
+'arg': '\\text{arg}',
+'s.t.': '\\text{ s.t. }',
+'&lt;' : '<',
+'&gt;' : '>',
 };
 
-function extractAndReplaceWithFunction(str, parseFunction) {
-for (let key in SYMBOLS) {
-  str = str.replaceAll(key + '(', SYMBOLS[key] + '(');
+const CONVERTERS = [
+{pattern: /\[([^\]]+)\]/g, parser: parseMatrixString},
+{pattern: /\{([^\]]+):\}/g, parser: parseMultilineString},
+];
+
+function parseMatrixString(str) {  
+return parseBlockString(str, '[', ']');
 }
 
-const regex = /\[([^\]]+)\]/g;
-let result = str;
+function parseMultilineString(str) {  
+return parseBlockString(str, '{', ':}');
+}
+
+function processCode(code) {
+for (let key in SYMBOLS) {
+  code = code.replaceAll(key, SYMBOLS[key]);
+}
+for (let converter of CONVERTERS) {
+  code = extractAndReplaceWithFunction(code, converter.pattern, converter.parser);
+}
+return code;
+}
+
+function extractAndReplaceWithFunction(str, regex, parseFunction) {
 let match;
 
 while ((match = regex.exec(str)) !== null) {
@@ -99,31 +90,30 @@ while ((match = regex.exec(str)) !== null) {
   if (content.indexOf(';') === -1) {
     continue;
   }
-  let parsedContent = parseFunction(content);
-  parsedContent = JSON.stringify(parsedContent).replaceAll('\"', '');
-  result = result.replace(match[0], parsedContent);
+  str = str.replace(match[0], parseFunction(content));
 }
 
-return result;
+return str;
 }
 
-function parseMatrixString(str) {  
+function parseBlockString(str, start, end) {
 str = str.trim();
-if (str.startsWith('[') && str.endsWith(']')) {
-    str = str.slice(1, -1);
+if (str.startsWith(start) && str.endsWith(end)) {
+    str = str.slice(start.length, -end.length);
 }
 let rows = str.split(';');
-let result = [];
+let result = '';
 for (let row of rows) {
     row = row.trim();
     if (row === '') {
       continue;
     }
-    let elements = row.split(',');
-    // elements = elements.map(el => Number(el.trim()));
-    result.push(elements);
+    result += start + row + end + ',';
+}  
+if (result.endsWith(',')) {
+  result = result.slice(0, -1);
 }
-return result;
+return start + result + end;
 }
 
 console.log('init');
