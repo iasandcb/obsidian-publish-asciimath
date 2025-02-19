@@ -57,6 +57,7 @@ const SYMBOLS = {
 's.t.': '\\text{ s.t. }',
 '&lt;' : '<',
 '&gt;' : '>',
+'\'': '^\\prime',
 };
 
 const CONVERTERS = [
@@ -65,11 +66,11 @@ const CONVERTERS = [
 ];
 
 function parseMatrixString(str) {  
-return parseBlockString(str, '[', ']');
+return parseBlockString(str, '[', ']', '[', ']');
 }
 
 function parseMultilineString(str) {  
-return parseBlockString(str, '{', ':}');
+return parseBlockString(str, '{', ':}', '(', ')');
 }
 
 function processCode(code) {
@@ -96,7 +97,7 @@ while ((match = regex.exec(str)) !== null) {
 return str;
 }
 
-function parseBlockString(str, start, end) {
+function parseBlockString(str, start, end, bStart, bEnd) {
 str = str.trim();
 if (str.startsWith(start) && str.endsWith(end)) {
     str = str.slice(start.length, -end.length);
@@ -108,7 +109,7 @@ for (let row of rows) {
     if (row === '') {
       continue;
     }
-    result += start + row + end + ',';
+    result += bStart + row + bEnd + ',';
 }  
 if (result.endsWith(',')) {
   result = result.slice(0, -1);
