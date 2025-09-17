@@ -1,0 +1,27 @@
+dx, dx
+dy, dy
+dz, dz
+dt, dt
+<=, \le
+>=, \ge
+dom, \text{dom}
+cod, \text{cod}
+rank, \text{rank}
+ran, \text{ran}
+span, \text{span}
+nullity, \text{nullity}
+arg, \text{arg}
+s.t., \text{ s.t. }
+where, \text{ where }
+diag, \text{diag}
+cam, \text{cam}
+deg, \text{deg }
+depth, \text{depth}
+lub, \text{lub}
+inv, \text{inv}
+im, \text{im}
+ker, \text{ker}
+ob, \text{ob}
+hom, \text{hom}
+Set, \text{Set}
+Grp, \text{Grp}
