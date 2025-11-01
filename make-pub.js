@@ -17,7 +17,7 @@ import { AllPackages } from "mathjax-full/js/input/tex/AllPackages.js";
 // -------- Config --------
 const INPUT_MD = process.argv[2] || "input.md";
 const OUT_MD   = process.argv[3] || "output.md";
-const INPUT_PATH= "/Users/alex/Documents/firsthabit/books/수학의 구조 로어/";
+const INPUT_PATH= "/Users/alex/Documents/book/";
 const IMG_DIR  = "images/";
 const ALT_TEXT_DEFAULT = "equation";
 
@@ -260,7 +260,7 @@ function stripControlChars(text) {
 
 // -------- 메인 --------
 async function main() {
-  const USER_SYMBOLS = await loadSymbolsFromCSV("symbols.csv");
+  const USER_SYMBOLS = await loadSymbolsFromCSV("custom-symbols.csv");
   const amParser = new AMParser({ display: false, symbols: USER_SYMBOLS });
 
   for (let c = 1; c <= 12; c++) {
