@@ -1,9 +1,5 @@
 d/dx, \frac{\text{d}}{\text{d}x}
 d/dy, \frac{\text{d}}{\text{d}y}
-dx, dx
-dy, dy
-dz, dz
-dt, dt
 <=, \le
 >=, \ge
 dom, \text{dom}
@@ -27,3 +23,5 @@ ob, \text{ob}
 hom, \text{hom}
 Set, \text{Set}
 Grp, \text{Grp}
+open, \text{open}
+closed, \text{closed}
