@@ -14,3 +14,13 @@ After running
 node make-pub.js
 
 pandoc --metadata author="Author" --metadata title="Title" *.md --from=gfm+raw_html --to=epub2 --resource-path=.:images --css=book-style.css --toc --toc-depth=2 -o book.epub
+
+obsidian-asciimath plugin
+main.js
+```
+e = `\\begin{aligned}${e}\\end{aligned}`
+```
+to
+```
+e = `\\begin{gather*}${e}\\end{gather*}`
+```
