@@ -1,5 +1,7 @@
 d/dx, \frac{\text{d}}{\text{d}x}
 d/dy, \frac{\text{d}}{\text{d}y}
+du, \text{d}u
+dv, \text{d}v
 <=, \le
 >=, \ge
 dom, \text{dom}
@@ -25,3 +27,15 @@ Set, \text{Set}
 Grp, \text{Grp}
 open, \text{open}
 closed, \text{closed}
+VectorSpace, \text{VectorSpace}
+FiniteVectorSpace, \text{FiniteVectorSpace}
+Basis, \text{Basis}
+OrderedBasis, \text{OrderedBasis}
+!:, \mathrel{:\!\!\mathrel{/}}
+LinearCombination, \text{LinearCombination}
+Field, \text{Field}
+InnerProductSpace, \text{InnerProductSpace}
+FiniteInnerProductSpace, \text{FiniteInnerProductSpace}
+linear, \text{linear}
+bilinear, \text{bilinear}
+Basis, \text{Basis}
