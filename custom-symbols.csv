@@ -3,6 +3,7 @@ d/dy, \frac{\text{d}}{\text{d}y}
 d/dt, \frac{\text{d}}{\text{d}t}
 du, \text{d}u
 dv, \text{d}v
+d alpha, \text{d} \alpha
 <=, \le
 >=, \ge
 dom, \text{dom}
