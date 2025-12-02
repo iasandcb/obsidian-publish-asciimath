@@ -1,6 +1,7 @@
+big, \Big
+d/dt, \frac{\text{d}}{\text{d}t}
 d/dx, \frac{\text{d}}{\text{d}x}
 d/dy, \frac{\text{d}}{\text{d}y}
-d/dt, \frac{\text{d}}{\text{d}t}
 du, \text{d}u
 dv, \text{d}v
 d alpha, \text{d} \alpha
@@ -42,3 +43,6 @@ linear, \text{linear}
 bilinear, \text{bilinear}
 Basis, \text{Basis}
 sup, \sup
+Diagonal, \text{Diagonal}
+Eigenvalue, \text{Eigenvalue}
+Eigenvector, \text{Eigenvector}
