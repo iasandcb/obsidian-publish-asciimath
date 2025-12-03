@@ -1,3 +1,9 @@
+nolimits, \nolimits
+middle, \middle
+LIM, \operatorname*{LIM}
+squ, \operatorname*{[}
+cur, \operatorname*{\{}
+par, \operatorname*{(}
 big, \Big
 d/dt, \frac{\text{d}}{\text{d}t}
 d/dx, \frac{\text{d}}{\text{d}x}
