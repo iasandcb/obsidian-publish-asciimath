@@ -1,9 +1,15 @@
+Functor, \text{Functor}
+Category, \text{Category}
+suu, \sqcup
+suuu, \bigsqcup
+Gal, \text{Gal}
+Split, \text{Split}
 nolimits, \nolimits
 middle, \middle
 LIM, \operatorname*{LIM}
-squ, \operatorname*{[}
-cur, \operatorname*{\{}
-par, \operatorname*{(}
+[+, \operatorname*{[}
+{+, \operatorname*{\{}
+(+, \operatorname*{(}
 big, \Big
 d/dt, \frac{\text{d}}{\text{d}t}
 d/dx, \frac{\text{d}}{\text{d}x}
@@ -24,7 +30,7 @@ s.t., \text{ s.t. }
 where, \text{ where }
 diag, \text{diag}
 cam, \text{cam}
-deg, \text{deg }
+deg, \text{deg}
 depth, \text{depth}
 lub, \text{lub}
 inv, \text{inv}
