@@ -11,9 +11,9 @@ Split, \text{Split}
 nolimits, \nolimits
 middle, \middle
 LIM, \operatorname*{LIM}
-[+, \operatorname*{[}
-{+, \operatorname*{\{}
-(+, \operatorname*{(}
+[@, \operatorname*{[}
+{@, \operatorname*{\{}
+(@, \operatorname*{(}
 big, \Big
 d/dt, \frac{\text{d}}{\text{d}t}
 d/dx, \frac{\text{d}}{\text{d}x}
