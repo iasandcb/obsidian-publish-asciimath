@@ -90,17 +90,39 @@ const cfg = {
 
 const am = new F(cfg);
 
-if (window.chrome) {
-  navigation.addEventListener('navigate', () => {
-    console.log('page changed');
-    setTimeout(() => {
-      console.log('T');
-      translate(true);
-      }, 500
-    );
-  }
-  );  
+function setupNavigationRefresh() {
+  // Use Navigation API when available
+  try {
+    if (typeof navigation !== 'undefined' && typeof navigation.addEventListener === 'function' && 'navigate' in navigation) {
+      navigation.addEventListener('navigate', () => setTimeout(() => translate(true), 500));
+      return;
+    }
+  } catch (e) {}
+
+  // Avoid double-binding
+  if (window.__am_navigation_listeners_set) return;
+  window.__am_navigation_listeners_set = true;
+
+  const onNav = () => setTimeout(() => translate(true), 500);
+
+  window.addEventListener('popstate', onNav);
+  window.addEventListener('hashchange', onNav);
+  window.addEventListener('pageshow', (e) => { if (e && e.persisted) onNav(); });
+
+  // Monkeypatch pushState/replaceState so SPA navigations call our handler
+  ['pushState', 'replaceState'].forEach((fn) => {
+    const orig = history[fn];
+    history[fn] = function (...args) {
+      const ret = orig.apply(this, args);
+      try { onNav(); } catch (e) {}
+      return ret;
+    };
+  });
+
+  window.addEventListener('pushstate', onNav);
 }
+
+setupNavigationRefresh();
 
 const script = document.createElement('script');
 script.onload = function () {
