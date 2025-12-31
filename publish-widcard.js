@@ -138,19 +138,44 @@ link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex.min.css?ts=" 
 document.head.appendChild(link);
 
 function translate(refresh = false) {
-  let pres =  document.getElementsByTagName('pre');
-  pres =  Array.from(document.getElementsByTagName('pre'));
+  let pres = Array.from(document.getElementsByTagName('pre'));
 
   for (let i = 0; i < pres.length; i++) {
     const pre = pres[i];
     if (pre.children[0].classList.contains('language-am')) {
       const para = pre.children[0].innerHTML
-      .split('\n')
-      .filter(e => e)
-      .reduce((acc, code) => acc + 
-      processCode(code)
-        + '<br/>', '');
-      pre.outerHTML = '<p style="text-align:center">' + para + '</p>';        
+        .split('\n')
+        .filter(e => e)
+        .reduce((acc, code) => acc +
+          processCode(code)
+            + '<br/>', '');
+
+      // create a <p> element so we can attach an event handler to toggle raw/source
+      const pEl = document.createElement('p');
+      pEl.style.textAlign = 'center';
+      pEl.style.cursor = 'pointer';
+      pEl.title = 'Click to toggle AsciiMath source';
+
+      // store both the rendered HTML and the original code on the element
+      pEl.dataset.amOriginal = pre.children[0].innerHTML;
+      pEl.dataset.amRendered = para;
+      pEl.dataset.amState = 'rendered';
+
+      pEl.innerHTML = para;
+
+      pEl.addEventListener('click', function () {
+        if (this.dataset.amState === 'rendered') {
+          // show original AsciiMath source in a <pre>
+          this.innerHTML = '<pre style="white-space:pre-wrap; text-align:left;">' + this.dataset.amOriginal + '</pre>';
+          this.dataset.amState = 'raw';
+        } else {
+          // restore rendered content
+          this.innerHTML = this.dataset.amRendered;
+          this.dataset.amState = 'rendered';
+        }
+      });
+
+      pre.parentNode.replaceChild(pEl, pre);
     }
   }
 }
