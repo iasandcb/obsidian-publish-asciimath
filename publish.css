@@ -1,0 +1,5 @@
+/* Make KaTeX display math block-level and remove vertical margins */
+p[data-am-state] span.katex {
+  display: block;
+  margin: 0.7rem;        /* tight single spacing */
+}

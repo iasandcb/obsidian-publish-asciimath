@@ -146,9 +146,8 @@ function translate(refresh = false) {
       const para = pre.children[0].innerHTML
         .split('\n')
         .filter(e => e)
-        .reduce((acc, code) => acc +
-          processCode(code)
-            + '<br/>', '');
+        .map(code => processCode(code))
+        .join('');
 
       // create a <p> element so we can attach an event handler to toggle raw/source
       const pEl = document.createElement('p');
