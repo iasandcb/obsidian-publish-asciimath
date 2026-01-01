@@ -143,11 +143,24 @@ function translate(refresh = false) {
   for (let i = 0; i < pres.length; i++) {
     const pre = pres[i];
     if (pre.children[0].classList.contains('language-am')) {
-      const para = pre.children[0].innerHTML
+      const lines = pre.children[0].innerHTML
         .split('\n')
-        .filter(e => e)
-        .map(code => processCode(code))
-        .join('');
+        .filter(e => e.trim() !== '');
+
+      // Accumulate lines that end with ';' into a single block
+      const blocks = [];
+      let acc = '';
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        acc = acc ? acc + '\n' + line : line;
+        if (!line.trim().endsWith(';')) {
+          blocks.push(acc);
+          acc = '';
+        }
+      }
+      if (acc) blocks.push(acc);
+
+      const para = blocks.map(code => processCode(code)).join('');
 
       // create a <p> element so we can attach an event handler to toggle raw/source
       const pEl = document.createElement('p');
@@ -181,7 +194,9 @@ function translate(refresh = false) {
 
 function processCode(code) {
   code = code.replaceAll('&lt;', '<').replaceAll('&gt;', '>');
-  result = am.toTex(code);
-  result = katex.renderToString(result, { throwOnError: false });
-  return result;
+  console.log('Processing code:', code);
+  code = am.toTex(code);
+  console.log('Processing code:', code);
+  code = katex.renderToString(code, { throwOnError: false });
+  return code;
 }
