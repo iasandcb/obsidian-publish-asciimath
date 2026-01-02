@@ -137,6 +137,28 @@ link.rel = "stylesheet";
 link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex.min.css?ts=" + new Date().getTime();
 document.head.appendChild(link);
 
+// const script2 = document.createElement('script');
+// script2.onload = function () {
+//   kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'W7W41R76R9');
+//   kofiwidget2.draw();
+// };
+
+// script2.src = 'https://storage.ko-fi.com/cdn/widget/Widget_2.js?ts=' + new Date().getTime();
+// document.head.appendChild(script2);
+
+const script3 = document.createElement('script');
+script3.onload = function () {
+  kofiWidgetOverlay.draw('changshinlee', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support me',
+    'floating-chat.donateButton.background-color': '#00b9fe',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+};
+
+script3.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js?ts=' + new Date().getTime();
+document.head.appendChild(script3);
+
 function translate(refresh = false) {
   let pres = Array.from(document.getElementsByTagName('pre'));
 
@@ -194,9 +216,7 @@ function translate(refresh = false) {
 
 function processCode(code) {
   code = code.replaceAll('&lt;', '<').replaceAll('&gt;', '>');
-  console.log('Processing code:', code);
   code = am.toTex(code);
-  console.log('Processing code:', code);
   code = katex.renderToString(code, { throwOnError: false });
   return code;
 }
