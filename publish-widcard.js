@@ -5,6 +5,7 @@ the, \\text{the}
 Id, \\text{Id}
 Group, \\text{Group}
 mor, \\text{mor}
+@->, \hookrightarrow
 Functor, \\text{Functor}
 Category, \\text{Category}
 suu, \\sqcup
