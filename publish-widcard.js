@@ -138,6 +138,21 @@ link.rel = "stylesheet";
 link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex.min.css?ts=" + new Date().getTime();
 document.head.appendChild(link);
 
+// minimal styling for copy button used for AsciiMath source view
+// const _am_copyStyle = document.createElement('style');
+// _am_copyStyle.innerHTML = `
+// .copy-code-button {
+//   position: absolute;
+//   top: 8px;
+//   right: 8px;
+//   padding: 0.25rem 0.5rem;
+//   font-size: 0.8rem;
+//   cursor: pointer;
+//   z-index: 10;
+// }
+// `;
+// document.head.appendChild(_am_copyStyle);
+
 // const script2 = document.createElement('script');
 // script2.onload = function () {
 //   kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'W7W41R76R9');
@@ -200,8 +215,69 @@ function translate(refresh = false) {
 
       pEl.addEventListener('click', function () {
         if (this.dataset.amState === 'rendered') {
-          // show original AsciiMath source in a <pre>
-          this.innerHTML = '<pre style="white-space:pre-wrap; text-align:left;">' + this.dataset.amOriginal + '</pre>';
+          // show original AsciiMath source in a <pre> and add a copy button
+          const preEl = document.createElement('pre');
+          preEl.style.whiteSpace = 'pre-wrap';
+          preEl.style.textAlign = 'left';
+          // original HTML may contain entities; keep the original innerHTML so it's displayed as source
+          preEl.innerHTML = this.dataset.amOriginal;
+
+          const wrapper = document.createElement('div');
+          wrapper.style.position = 'relative';
+          wrapper.appendChild(preEl);
+
+          const btn = document.createElement('button');
+          btn.className = 'copy-code-button';
+          btn.type = 'button';
+          btn.title = 'Copy code';
+          btn.setAttribute('aria-label', 'Copy code to clipboard');
+          btn.innerText = 'Copy';
+
+          // prevent toggling when clicking the button
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const textToCopy = preEl.textContent || preEl.innerText || '';
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(textToCopy).then(() => {
+                const old = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => btn.innerText = old, 1500);
+              }).catch(() => {
+                // fallback to execCommand
+                try {
+                  const ta = document.createElement('textarea');
+                  ta.value = textToCopy;
+                  document.body.appendChild(ta);
+                  ta.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(ta);
+                  const old = btn.innerText;
+                  btn.innerText = 'Copied!';
+                  setTimeout(() => btn.innerText = old, 1500);
+                } catch (err) {
+                  console.error('copy failed', err);
+                }
+              });
+            } else {
+              try {
+                const ta = document.createElement('textarea');
+                ta.value = textToCopy;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                const old = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => btn.innerText = old, 1500);
+              } catch (err) {
+                console.error('copy failed', err);
+              }
+            }
+          });
+
+          wrapper.appendChild(btn);
+          this.innerHTML = '';
+          this.appendChild(wrapper);
           this.dataset.amState = 'raw';
         } else {
           // restore rendered content
