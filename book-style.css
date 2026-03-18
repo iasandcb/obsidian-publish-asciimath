@@ -1,7 +1,10 @@
 p {
-  text-indent: 1.2em;   /* 들여쓰기 크기 */
+  text-indent: 1.2em;
 }
 
-ol {
-  list-style: none;
+pre {
+  font-size: 0.95em;
+  max-width: 90%;
+  margin: auto; 
+  box-sizing: border-box;
 }
