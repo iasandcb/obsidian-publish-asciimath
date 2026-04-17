@@ -17,7 +17,7 @@ import { AllPackages } from "mathjax-full/js/input/tex/AllPackages.js";
 // -------- Config --------
 const INPUT_MD = process.argv[2] || "input.md";
 const OUT_MD   = process.argv[3] || "output.md";
-const INPUT_PATH= "/Users/alex/Documents/book/";
+const INPUT_PATH= "/Users/alex/workspace/Notes/books/수학의 구조 2판/";
 const IMG_DIR  = "images/";
 const ALT_TEXT_DEFAULT = "equation";
 
@@ -259,7 +259,84 @@ function stripControlChars(text) {
 }
 
 // -------- 메인 --------
+async function convertCommand(inputFile, outputFile) {
+  const USER_SYMBOLS = await loadSymbolsFromCSV("custom-symbols.csv");
+  const amParser = new AMParser({ display: false, symbols: USER_SYMBOLS });
+
+  const raw = await fs.readFile(inputFile, "utf8");
+  const parsed = matter(stripControlChars(raw));
+  let body = stripControlChars(parsed.content);
+
+  // 1. Process block math
+  let matches = [...body.matchAll(FENCE_RE)];
+  let outParts = [];
+  let cursor = 0;
+  let blockCount = 0;
+
+  for (let i = 0; i < matches.length; i++) {
+    const m = matches[i];
+    const matchStart = m.index;
+    const matchEnd   = matchStart + m[0].length;
+    const code       = m[1];
+
+    outParts.push(body.slice(cursor, matchStart));
+    
+    const lines   = code.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    const texList = lines.map(s => amParser.toTex(s));
+    const texSrc  = "\\begin{gather*}\n" + texList.join(" \\\\ \n") + "\n\\end{gather*}";
+    
+    let prefix = m[0].substring(0, m[0].indexOf("$$"));
+    let suffix = m[0].substring(m[0].lastIndexOf("$$") + 2);
+
+    outParts.push(`${prefix}\`\`\`math\n${texSrc}\n\`\`\`${suffix}`);
+
+    cursor = matchEnd;
+    blockCount++;
+  }
+  outParts.push(body.slice(cursor));
+  body = outParts.join("");
+
+  // 2. Process inline math
+  const INLINE_RE = /(?<![\\$])\$(?!\$)([^$]+?)(?<![\\$])\$(?!\$)/g;
+  matches = [...body.matchAll(INLINE_RE)];
+  outParts = [];
+  cursor = 0;
+  let inlineCount = 0;
+
+  for (let i = 0; i < matches.length; i++) {
+    const m = matches[i];
+    const matchStart = m.index;
+    const matchEnd   = matchStart + m[0].length;
+    const code       = m[1];
+
+    outParts.push(body.slice(cursor, matchStart));
+    
+    const texSrc = amParser.toTex(code.trim());
+    outParts.push(`$${texSrc}$`);
+
+    cursor = matchEnd;
+    inlineCount++;
+  }
+  outParts.push(body.slice(cursor));
+  const newBody = outParts.join("");
+
+  await fs.writeFile(outputFile, matter.stringify(newBody, parsed.data), "utf8");
+  console.log(`✔ Convert done! Converted ${blockCount} block(s) and ${inlineCount} inline to LaTeX in ${outputFile}.`);
+}
+
 async function main() {
+  const COMMAND = process.argv[2];
+  if (COMMAND === "convert") {
+    const inputFile = process.argv[3];
+    const outputFile = process.argv[4];
+    if (!inputFile || !outputFile) {
+      console.error("Usage: node make-pub.js convert <input> <output>");
+      process.exit(1);
+    }
+    await convertCommand(inputFile, outputFile);
+    return;
+  }
+
   const USER_SYMBOLS = await loadSymbolsFromCSV("custom-symbols.csv");
   const amParser = new AMParser({ display: false, symbols: USER_SYMBOLS });
 

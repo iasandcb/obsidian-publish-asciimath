@@ -2,3 +2,4 @@ node_modules/
 *.md
 images/
 *.epub
+.DS_Store
