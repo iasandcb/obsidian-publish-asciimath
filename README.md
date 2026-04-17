@@ -14,7 +14,7 @@ While publish.js works well, it basically depends on Obsidian Publish, which is 
  * https://github.com/iasandcb/probstat-for-programmers/blob/main/ch1/1-4.md
 
 ## make-pub.js
-make-pub.js allows you to convert AsciiMath to other formats.
+make-pub.js allows you to convert AsciiMath to other formats in a Markdown file.
 ### Installation
 ```
 npm install
@@ -32,7 +32,7 @@ Configure INPUT_PATH in make-pub.js.
 node make-pub.js
 ```
 
-### Compilation
+#### Compilation (optional)
 You can make a book from the converted files with Pandoc.
 ```
 pandoc --metadata author="Author" --metadata title="Title" *.md --from=gfm+raw_html --to=epub2 --resource-path=.:images --css=book-style.css --toc --toc-depth=2 -o book.epub
