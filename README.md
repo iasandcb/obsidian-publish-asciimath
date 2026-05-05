@@ -14,26 +14,48 @@ While publish.js works well, it basically depends on Obsidian Publish, which is 
  * https://github.com/iasandcb/probstat-for-programmers/blob/main/ch1/1-4.md
 
 ## make-pub.js
-make-pub.js allows you to convert AsciiMath to other formats in a Markdown file.
+
+`make-pub` is a CLI tool that converts AsciiMath expressions in Markdown files to LaTeX or image-based HTML for better compatibility across different platforms (like GitHub).
+
 ### Installation
-```
-npm install
-```
-### Conversion
 
-#### File-base (LaTeX)
-```
-node make-pub.js convert 1.md 1-out.md
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Link the CLI command globally:
+   ```bash
+   npm link
+   ```
+
+Now you can use the `make-pub` command from any directory in your shell.
+
+### Usage
+
+#### 1. Convert to LaTeX (File-based)
+This command replaces AsciiMath blocks (`$$...$$`) with LaTeX math blocks (` ```math `) and inline `$ ... $` with LaTeX syntax.
+
+```bash
+make-pub convert <input.md> <output.md>
 ```
 
-#### Directory-base (image)
-Configure INPUT_PATH in make-pub.js.
-```
-node make-pub.js
+#### 2. Convert to Image-based HTML (Batch)
+This processes a batch of files (defined in `make-pub.js`) and generates PNG images for math expressions.
+
+```bash
+# Configure INPUT_PATH in make-pub.js if necessary
+make-pub
 ```
 
-#### Compilation (optional)
-You can make a book from the converted files with Pandoc.
+#### 3. Compilation with Pandoc (Optional)
+You can compile the converted files into an EPUB book using Pandoc:
+
+```bash
+pandoc --metadata author="Author" --metadata title="Title" *.md \
+  --from=gfm+raw_html --to=epub2 \
+  --resource-path=.:images \
+  --css=book-style.css \
+  --toc --toc-depth=2 -o book.epub
 ```
-pandoc --metadata author="Author" --metadata title="Title" *.md --from=gfm+raw_html --to=epub2 --resource-path=.:images --css=book-style.css --toc --toc-depth=2 -o book.epub
-```
+

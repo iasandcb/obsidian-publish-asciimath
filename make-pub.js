@@ -1,9 +1,11 @@
+#!/usr/bin/env node
 // convert-ascii.js
 // Usage: node convert-ascii.js input.md output.md
 // Deps:  npm i mathjax-full sharp gray-matter asciimath-parser
 
 import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
 import matter from "gray-matter";
 import sharp from "sharp";
 import { mathjax } from "mathjax-full/js/mathjax.js";
@@ -13,6 +15,9 @@ import { liteAdaptor } from "mathjax-full/js/adaptors/liteAdaptor.js";
 import { RegisterHTMLHandler } from "mathjax-full/js/handlers/html.js";
 import { AsciiMath as AMParser, TokenTypes } from "asciimath-parser";
 import { AllPackages } from "mathjax-full/js/input/tex/AllPackages.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // -------- Config --------
 const INPUT_MD = process.argv[2] || "input.md";
@@ -260,7 +265,8 @@ function stripControlChars(text) {
 
 // -------- 메인 --------
 async function convertCommand(inputFile, outputFile) {
-  const USER_SYMBOLS = await loadSymbolsFromCSV("custom-symbols.csv");
+  const symbolsPath = path.join(__dirname, "custom-symbols.csv");
+  const USER_SYMBOLS = await loadSymbolsFromCSV(symbolsPath);
   const amParser = new AMParser({ display: false, symbols: USER_SYMBOLS });
 
   const raw = await fs.readFile(inputFile, "utf8");
@@ -337,7 +343,8 @@ async function main() {
     return;
   }
 
-  const USER_SYMBOLS = await loadSymbolsFromCSV("custom-symbols.csv");
+  const symbolsPath = path.join(__dirname, "custom-symbols.csv");
+  const USER_SYMBOLS = await loadSymbolsFromCSV(symbolsPath);
   const amParser = new AMParser({ display: false, symbols: USER_SYMBOLS });
 
   for (let c = 1; c <= 12; c++) {
