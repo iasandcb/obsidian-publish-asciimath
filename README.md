@@ -40,13 +40,20 @@ This command replaces AsciiMath blocks (`$$...$$`) with LaTeX math blocks (` ```
 make-pub convert <input.md> <output.md>
 ```
 
-#### 2. Convert to Image-based HTML (Batch)
-This processes a batch of files (defined in `make-pub.js`) and generates PNG images for math expressions.
+#### 2. Batch Convert Directory to Image-based HTML
+This processes all Markdown files in a specified directory and generates PNG images for math expressions.
 
 ```bash
-# Configure INPUT_PATH in make-pub.js if necessary
-make-pub
+make-pub batch <input_path>
 ```
+
+Example:
+```bash
+make-pub batch ~/workspace/book
+```
+
+Alternatively, running `make-pub` without arguments will process a predefined sequence of files (01.md to 12.md) from the hardcoded `INPUT_PATH` in the script.
+
 
 #### 3. Compilation with Pandoc (Optional)
 You can compile the converted files into an EPUB book using Pandoc:
