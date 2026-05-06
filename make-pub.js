@@ -264,6 +264,106 @@ function stripControlChars(text) {
 }
 
 // -------- 메인 --------
+async function processBatchFile(inputFilePath, outputFileName, amParser) {
+  const raw = await fs.readFile(inputFilePath, "utf8");
+  const parsed = matter(stripControlChars(raw));
+  let body = stripControlChars(parsed.content);
+  const imagePath = path.join(IMG_DIR, outputFileName);
+
+  await fs.mkdir(imagePath, { recursive: true });
+
+  // $$...$$ 매치 수집 후 선계산
+  const matches = [...body.matchAll(FENCE_RE)];
+  const eqInfos = matches.map(m => {
+    const code = m[1];
+    const svg = renderAsciiMathToSVG(code, amParser);
+    const exSize = parseExSize(svg);
+    return { code, svg, exSize };
+  });
+
+  const contentMaxW = Math.max(1, MAX_FINAL_W - 2 * PAD_X);
+  const exWidths = eqInfos
+    .map(info => (info.exSize && info.exSize.wEx > 0) ? info.exSize.wEx : 0)
+    .filter(w => w > 0);
+  if (exWidths.length > 0) {
+    const maxExWidth = Math.max(...exWidths);
+    const maxPxPerEx = contentMaxW / maxExWidth;
+    const desiredPxPerEx = Math.min(BASE_PX_PER_EX, maxPxPerEx);
+    activePxPerEx = Math.max(1, desiredPxPerEx);
+  } else {
+    activePxPerEx = BASE_PX_PER_EX;
+  }
+
+  let outParts = [];
+  let cursor = 0;
+  let idx = 0;
+
+  for (let i = 0; i < matches.length; i++) {
+    const m = matches[i];
+    const matchStart = m.index;
+    const matchEnd   = matchStart + m[0].length;
+    const info       = eqInfos[i];
+
+    outParts.push(body.slice(cursor, matchStart));
+
+    const id  = (++idx).toString().padStart(3, "0");
+    const svg = info.svg;
+    const pngName = `eq-${id}.png`;
+    try {
+      await svgToPngTightHeightDynamic(svg, path.join(imagePath, pngName));
+    } catch (err) {
+      console.error(`❌ Failed to render file ${inputFilePath}, eq ${id}`);
+      console.error(`   ASCII: ${info.code.replace(/\s+/g, " ").slice(0, 200)}`);
+      console.error(`   Error: ${err instanceof Error ? err.message : String(err)}`);
+      throw err;
+    }
+
+    const html =
+      [
+        `<div class="eq">`,
+        `  <img src="${imagePath}/${pngName}" alt="${ALT_TEXT_DEFAULT}" `,
+        `    style="display: block; margin: 0 auto;" />`,
+        `</div>`,
+      ].join("\n");
+
+    outParts.push(`\n${html}\n\n`);
+    cursor = matchEnd;
+  }
+  outParts.push(body.slice(cursor));
+  const newBody = outParts.join("");
+
+  await fs.writeFile(`${outputFileName}.md`, matter.stringify(newBody, parsed.data), "utf8");
+  console.log(`✔ Done! Converted ${idx} block(s).
+- Uniform glyph size via ex-unit scaling (px/ex≈${activePxPerEx.toFixed(2)})
+- Fixed-width canvas (${MAX_FINAL_W}px) with minimal padding (PAD_X=${PAD_X}, PAD_Y=${PAD_Y})
+- Output: ${outputFileName}.md, Images in ${imagePath}/`);
+}
+
+async function batchCommand(inputPath) {
+  const symbolsPath = path.join(__dirname, "custom-symbols.csv");
+  const USER_SYMBOLS = await loadSymbolsFromCSV(symbolsPath);
+  const amParser = new AMParser({ display: false, symbols: USER_SYMBOLS });
+
+  let files;
+  try {
+    files = (await fs.readdir(inputPath)).filter(f => f.endsWith(".md")).sort();
+  } catch (err) {
+    console.error(`❌ Error reading directory ${inputPath}: ${err.message}`);
+    process.exit(1);
+  }
+
+  if (files.length === 0) {
+    console.log(`No .md files found in ${inputPath}`);
+    return;
+  }
+
+  for (const file of files) {
+    const inputFilePath = path.join(inputPath, file);
+    const outputFileName = path.parse(file).name;
+    await processBatchFile(inputFilePath, outputFileName, amParser);
+  }
+}
+
 async function convertCommand(inputFile, outputFile) {
   const symbolsPath = path.join(__dirname, "custom-symbols.csv");
   const USER_SYMBOLS = await loadSymbolsFromCSV(symbolsPath);
@@ -332,6 +432,7 @@ async function convertCommand(inputFile, outputFile) {
 
 async function main() {
   const COMMAND = process.argv[2];
+  
   if (COMMAND === "convert") {
     const inputFile = process.argv[3];
     const outputFile = process.argv[4];
@@ -343,85 +444,31 @@ async function main() {
     return;
   }
 
+  if (COMMAND === "batch") {
+    const inputPath = process.argv[3];
+    if (!inputPath) {
+      console.error("Usage: node make-pub.js batch <input_path>");
+      process.exit(1);
+    }
+    await batchCommand(inputPath);
+    return;
+  }
+
+  // Default behavior (legacy)
   const symbolsPath = path.join(__dirname, "custom-symbols.csv");
   const USER_SYMBOLS = await loadSymbolsFromCSV(symbolsPath);
   const amParser = new AMParser({ display: false, symbols: USER_SYMBOLS });
 
   for (let c = 1; c <= 12; c++) {
     const inputName = c.toString().padStart(2, "0");
-    const outputName = inputName
-    const raw = await fs.readFile(INPUT_PATH + `${inputName}.md`, "utf8");
-    const parsed = matter(stripControlChars(raw));
-    let body = stripControlChars(parsed.content);
-    const imagePath = IMG_DIR + `${outputName}`;
-
-    await fs.mkdir(imagePath, { recursive: true });
-
-    // $$...$$ 매치 수집 후 선계산
-    const matches = [...body.matchAll(FENCE_RE)];
-    const eqInfos = matches.map(m => {
-      const code = m[1];
-      const svg = renderAsciiMathToSVG(code, amParser);
-      const exSize = parseExSize(svg);
-      return { code, svg, exSize };
-    });
-
-    const contentMaxW = Math.max(1, MAX_FINAL_W - 2 * PAD_X);
-    const exWidths = eqInfos
-      .map(info => (info.exSize && info.exSize.wEx > 0) ? info.exSize.wEx : 0)
-      .filter(w => w > 0);
-    if (exWidths.length > 0) {
-      const maxExWidth = Math.max(...exWidths);
-      const maxPxPerEx = contentMaxW / maxExWidth;
-      const desiredPxPerEx = Math.min(BASE_PX_PER_EX, maxPxPerEx);
-      activePxPerEx = Math.max(1, desiredPxPerEx);
-    } else {
-      activePxPerEx = BASE_PX_PER_EX;
+    const inputFilePath = path.join(INPUT_PATH, `${inputName}.md`);
+    try {
+      await fs.access(inputFilePath);
+      await processBatchFile(inputFilePath, inputName, amParser);
+    } catch (err) {
+      // Skip missing files in default loop
+      continue;
     }
-
-    let outParts = [];
-    let cursor = 0;
-    let idx = 0;
-
-    for (let i = 0; i < matches.length; i++) {
-      const m = matches[i];
-      const matchStart = m.index;
-      const matchEnd   = matchStart + m[0].length;
-      const info       = eqInfos[i];
-
-      outParts.push(body.slice(cursor, matchStart));
-
-      const id  = (++idx).toString().padStart(3, "0");
-      const svg = info.svg;
-      const pngName = `eq-${id}.png`;
-      try {
-        await svgToPngTightHeightDynamic(svg, path.join(imagePath, pngName));
-      } catch (err) {
-        console.error(`❌ Failed to render chapter ${c}, eq ${id}`);
-        console.error(`   ASCII: ${info.code.replace(/\s+/g, " ").slice(0, 200)}`);
-        console.error(`   Error: ${err instanceof Error ? err.message : String(err)}`);
-        throw err;
-      }
-
-      const html =
-        [
-          `<div class="eq">`,
-          `  <img src="${imagePath}/${pngName}" alt="${ALT_TEXT_DEFAULT}" `,
-          `    style="display: block; margin: 0 auto;" />`,
-          `</div>`,
-        ].join("\n");
-
-      outParts.push(`\n${html}\n\n`);
-      cursor = matchEnd;
-    }
-    outParts.push(body.slice(cursor));
-    const newBody = outParts.join("");
-
-    await fs.writeFile(`${outputName}.md`, matter.stringify(newBody, parsed.data), "utf8");
-    console.log(`✔ Done!  Converted ${idx} block(s).
-- Uniform glyph size via ex-unit scaling (px/ex≈${activePxPerEx.toFixed(2)})
-- Fixed-width canvas (${MAX_FINAL_W}px) with minimal padding (PAD_X=${PAD_X}, PAD_Y=${PAD_Y})
-- Output: ${outputName}.md, Images in ${imagePath}/`);
   }
 }
 
@@ -429,3 +476,4 @@ main().catch(err => {
   console.error(err);
   process.exit(1);
 });
+
